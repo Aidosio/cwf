@@ -1,6 +1,7 @@
 import {initializeApp} from "firebase/app";
 import {getAuth, GoogleAuthProvider, signInWithPopup} from 'firebase/auth'
 import {getFirestore} from 'firebase/firestore'
+import {useCollectionData} from "react-firebase-hooks/firestore";
 
 const firebaseConfig = {
     apiKey: "AIzaSyCA6VgQkfEy0Je4krC8u73Tk06DfI-a-20",
@@ -18,3 +19,20 @@ export const FIREBASE_STORE = getFirestore(FIREBASE_APP);
 
 const provider = new GoogleAuthProvider();
 export const signInWithGooglePopup = () => signInWithPopup(FIREBASE_AUTH, provider);
+
+const [messages, loading] = useCollectionData(
+    FIREBASE_STORE.collection('messages').orderBy('createdAt')
+)
+
+export const sendMessage = async (user, message, setMessage, setLoading) => {
+    FIREBASE_STORE.collection('messages').add({
+        uid: user.uid,
+        displayName: user.displayName,
+        photoURL: user.photoURL,
+        message: message,
+        createdAt: FIREBASE_APP.firestore.FieldValue.serverTimestamp()
+    })
+    setMessage('')
+    setLoading(loading)
+}
+
